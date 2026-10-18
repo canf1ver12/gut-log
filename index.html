@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
-<title>食刻</title>
+<title>gut-log</title>
 <style>
 :root{
   --bg:#f2f2f7; --card:#ffffff; --ink:#000000; --ink2:#3c3c43; --muted:#8e8e93; --line:#e5e5ea; --lane:#f2f2f7; --fill:rgba(118,118,128,.12);
@@ -206,7 +206,7 @@ textarea{min-height:64px;resize:vertical}
 </style>
 </head>
 <body>
-<header class="topbar"><div class="eyebrow" id="eyebrow">食刻</div><h1 id="pageTitle">摘要</h1><button class="themebtn" id="themeBtn" aria-label="切換深淺色"></button></header>
+<header class="topbar"><div class="eyebrow" id="eyebrow">gut-log</div><h1 id="pageTitle">摘要</h1><button class="themebtn" id="themeBtn" aria-label="切換深淺色"></button></header>
 
 <main>
   <section id="page-home" class="page active"></section>
@@ -227,7 +227,7 @@ textarea{min-height:64px;resize:vertical}
 
 <script>
 /* ========== 基本設定與資料 ========== */
-const KEY = 'shike-v1';
+const KEY = 'gut-log-v1';
 const NONE = 'none';            // 「都沒有」標籤
 const FAST_MIN = 25;            // 少於幾分鐘算吃太快
 const MIN_N = 30;               // 樣本數門檻
@@ -378,10 +378,10 @@ function tick() {
   if (a) {
     const t = Date.now() - ms(a.start);
     const el = $('#timer'); if (el) el.textContent = fmtClock(t);
-    document.title = '🍚 ' + fmtClock(t) + ' 吃飯中｜食刻';
+    document.title = '🍚 ' + fmtClock(t) + ' 吃飯中｜gut-log';
     checkNotify(a, t);
   } else {
-    document.title = '食刻';
+    document.title = 'gut-log';
   }
 }
 function dueCount(t) {
@@ -401,7 +401,7 @@ function checkNotify(a, t) {
 function notify(title, body) {
   if (!('Notification' in window) || Notification.permission !== 'granted') return false;
   try {
-    const n = new Notification(title, { body, tag: 'shike-meal', renotify: true });
+    const n = new Notification(title, { body, tag: 'gut-log-meal', renotify: true });
     n.onclick = () => { window.focus(); n.close(); };
     return true;
   } catch (e) { return false; }
@@ -1052,7 +1052,7 @@ function renderSettings() {
     <input type="file" id="impFile" accept=".json,application/json" class="hidden">
     <div class="note">CSV 會下載兩個檔案（吃飯、症狀），用 Excel 打開就能印給醫生看。換手機或電腦時，用 JSON 備份再匯入。</div>
   </div>
-  <p class="muted small" style="text-align:center">食刻・資料只存在你的裝置上，不會上傳到任何地方</p>`;
+  <p class="muted small" style="text-align:center">gut-log · 資料只存在你的裝置上，不會上傳到任何地方</p>`;
 
   const bindNum = (id, key, min, max) => { el.querySelector('#' + id).onchange = e => { let v = Math.round(+e.target.value); if (!(v >= min && v <= max)) { toast('請輸入 ' + min + '～' + max); e.target.value = st[key]; return; } st[key] = v; save(); toast('已更新'); }; };
   bindNum('setRem', 'reminderMinutes', 1, 180); bindNum('setRep', 'repeatMinutes', 1, 60);
@@ -1060,13 +1060,13 @@ function renderSettings() {
   const pb = el.querySelector('#permBtn'); if (pb) pb.onclick = async () => { await askNotifPermission(); renderSettings(); };
   el.querySelector('#testBtn').onclick = async () => {
     await askNotifPermission();
-    if (notify('食刻測試通知', '看到這則就代表通知可以用了')) toast('已送出測試通知');
+    if (notify('gut-log 測試通知', '看到這則就代表通知可以用了')) toast('已送出測試通知');
     else toast('這個瀏覽器沒辦法跳通知，會改用畫面提示', 4000);
     renderSettings();
   };
   bindTagEditor(el, 'food', 'foodTags'); bindTagEditor(el, 'sym', 'symptomTags');
   el.querySelectorAll('#themeSeg button').forEach(b => b.onclick = () => { st.theme = b.dataset.th; save(); applyTheme(); renderSettings(); });
-  el.querySelector('#expJson').onclick = () => download('shike-backup-' + dayKey(Date.now()) + '.json', JSON.stringify(db, null, 2), 'application/json');
+  el.querySelector('#expJson').onclick = () => download('gut-log-backup-' + dayKey(Date.now()) + '.json', JSON.stringify(db, null, 2), 'application/json');
   el.querySelector('#expCsv').onclick = exportCsv;
   el.querySelector('#impJson').onclick = () => el.querySelector('#impFile').click();
   el.querySelector('#impFile').onchange = e => {
@@ -1079,7 +1079,7 @@ function renderSettings() {
         if (!confirm(`檔案裡有 ${d.meals.length} 餐、${d.symptoms.length} 次症狀。\n匯入會覆蓋目前的資料，確定嗎？`)) return;
         d.settings = Object.assign({}, DEFAULTS, d.settings || {});
         db = d; save(); applyTheme(); renderSettings(); toast('匯入完成');
-      } catch (err) { toast('檔案格式不對，請選食刻備份的 JSON'); }
+      } catch (err) { toast('檔案格式不對，請選 gut-log 備份的 JSON'); }
     };
     r.readAsText(f); e.target.value = '';
   };
@@ -1122,8 +1122,8 @@ function exportCsv() {
   const syms = [['開始', '緩解', '持續分鐘', '症狀', '強度', '備註'].join(',')]
     .concat([...db.symptoms].sort((a, b) => ms(a.time) - ms(b.time)).map(s => [dt(s.time), dt(s.endTime), s.endTime ? (s.durOver ? '120+' : Math.round((ms(s.endTime) - ms(s.time)) / 60000)) : '', s.types.join('、'), s.intensity, s.note].map(q).join(',')));
   const day = dayKey(Date.now());
-  download('食刻-吃飯-' + day + '.csv', '\ufeff' + meals.join('\r\n'), 'text/csv');
-  setTimeout(() => download('食刻-症狀-' + day + '.csv', '\ufeff' + syms.join('\r\n'), 'text/csv'), 600);
+  download('gut-log-吃飯-' + day + '.csv', '\ufeff' + meals.join('\r\n'), 'text/csv');
+  setTimeout(() => download('gut-log-症狀-' + day + '.csv', '\ufeff' + syms.join('\r\n'), 'text/csv'), 600);
   toast('已匯出兩個 CSV 檔');
 }
 
@@ -1132,7 +1132,7 @@ let current = 'home';
 const TITLES = { home: '摘要', timeline: '時間軸', stats: '趨勢', settings: '設定' };
 function renderHeader() {
   const d = new Date();
-  $('#eyebrow').textContent = '食刻 · ' + (d.getMonth() + 1) + '月' + d.getDate() + '日 星期' + WD[d.getDay()];
+  $('#eyebrow').textContent = 'gut-log · ' + (d.getMonth() + 1) + '月' + d.getDate() + '日 星期' + WD[d.getDay()];
   $('#pageTitle').textContent = TITLES[current];
 }
 function renderCurrent() {
