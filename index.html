@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<title>食刻</title>
+<style>
+:root{
+  --bg:#f2f2f7; --card:#ffffff; --ink:#000000; --ink2:#3c3c43; --muted:#8e8e93; --line:#e5e5ea; --lane:#f2f2f7; --fill:rgba(118,118,128,.12);
+  --meal:#34c759; --meal-soft:rgba(52,199,89,.14); --done:#007aff; --done-soft:rgba(0,122,255,.12);
+  --sym:#5856d6; --sym-soft:rgba(88,86,214,.12); --accent:#007aff; --red:#ff3b30;
+  --warn:#c93400; --warn-bg:rgba(255,149,0,.14); --on-strong:#ffffff; --tabbar:rgba(249,249,249,.92);
+  --on-meal:#fff; --on-sym:#fff; --on-accent:#fff; --seg-on:#ffffff; color-scheme:light;
+}
+:root[data-theme="dark"]{
+    --bg:#000000; --card:#1c1c1e; --ink:#ffffff; --ink2:#ebebf5; --muted:#8e8e93; --line:#38383a; --lane:#2c2c2e; --fill:rgba(118,118,128,.24);
+    --meal:#30d158; --meal-soft:rgba(48,209,88,.18); --done:#0a84ff; --done-soft:rgba(10,132,255,.2);
+    --sym:#5e5ce6; --sym-soft:rgba(94,92,230,.22); --accent:#0a84ff; --red:#ff453a;
+    --warn:#ff9f0a; --warn-bg:rgba(255,159,10,.16); --on-strong:#ffffff; --tabbar:rgba(22,22,24,.88);
+    --seg-on:#636366; color-scheme:dark;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#000000; --card:#1c1c1e; --ink:#ffffff; --ink2:#ebebf5; --muted:#8e8e93; --line:#38383a; --lane:#2c2c2e; --fill:rgba(118,118,128,.24);
+    --meal:#30d158; --meal-soft:rgba(48,209,88,.18); --done:#0a84ff; --done-soft:rgba(10,132,255,.2);
+    --sym:#5e5ce6; --sym-soft:rgba(94,92,230,.22); --accent:#0a84ff; --red:#ff453a;
+    --warn:#ff9f0a; --warn-bg:rgba(255,159,10,.16); --on-strong:#ffffff; --tabbar:rgba(22,22,24,.88);
+    --seg-on:#636366; color-scheme:dark;
+  }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink)}
+body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;font-size:17px;line-height:1.4;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
+input,textarea,select{font:inherit;color:var(--ink)}
+.hidden{display:none!important}
+.muted{color:var(--muted)} .small{font-size:13px}
+.num,.big b,.sumrow b,.stat .v,.scale-btn b{font-family:ui-rounded,"SF Pro Rounded",-apple-system,"PingFang TC",sans-serif}
+
+.topbar{position:sticky;top:0;z-index:5;background:var(--bg);padding:calc(14px + env(safe-area-inset-top)) 20px 6px;max-width:560px;margin:0 auto}
+.topbar .eyebrow{font-size:13px;font-weight:600;color:var(--muted);letter-spacing:.2px}
+.topbar h1{margin:2px 0 0;font-size:34px;font-weight:800;letter-spacing:.3px}
+main{max-width:560px;margin:0 auto;padding:4px 16px calc(100px + env(safe-area-inset-bottom))}
+.page{display:none} .page.active{display:block}
+.section-h{font-size:22px;font-weight:700;margin:22px 4px 8px}
+
+.big{width:100%;display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:14px;align-items:center;text-align:left;border-radius:16px;padding:18px 18px;margin:8px 0 10px;transition:transform .1s,opacity .1s}
+.big:active{transform:scale(.985);opacity:.85}
+.big-icon{grid-row:1 / span 2;width:52px;height:52px;border-radius:14px;display:grid;place-items:center;font-size:28px;line-height:1;background:rgba(255,255,255,.22)}
+.big-label{font-size:24px;font-weight:700}
+.big-sub{font-size:14px;opacity:.88}
+.meal-start{background:var(--meal);color:var(--on-meal);min-height:112px}
+.meal-end{background:var(--accent);color:var(--on-accent);min-height:112px}
+.meal-end b{font-size:22px;font-variant-numeric:tabular-nums}
+.symptom{background:var(--sym);color:var(--on-sym);min-height:112px}
+
+.card{background:var(--card);border-radius:14px;padding:14px 16px;margin:10px 0}
+.card-title{font-weight:600;font-size:15px;margin-bottom:10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.card-title.meal{color:var(--meal)} .card-title.sym{color:var(--sym)} .card-title.blue{color:var(--accent)}
+.card-title.meal::before,.card-title.sym::before,.card-title.blue::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+.hint{font-weight:400;font-size:13px;color:var(--muted);margin-left:auto}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:7px 14px;border-radius:999px;background:var(--fill);font-size:15px}
+.chip.on{background:var(--meal);color:var(--on-meal);font-weight:600}
+.chip.none.on{background:var(--ink2);color:var(--card)}
+.symchips .chip.on{background:var(--sym);color:var(--on-sym)}
+.chip .x{margin-left:6px;opacity:.55}
+
+.ongoing{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-top:.5px solid var(--line)}
+.ongoing:first-of-type{border-top:none}
+.ongoing b{color:var(--ink);font-weight:600}
+.pill{padding:7px 16px;border-radius:999px;background:var(--sym-soft);color:var(--sym);font-weight:600;font-size:15px;white-space:nowrap}
+
+.sumrow{display:flex;gap:10px;margin-bottom:6px}
+.sumrow div{flex:1;font-size:15px;color:var(--muted)}
+.sumrow b{font-size:32px;font-weight:700;margin-right:4px;color:var(--ink)}
+.sumrow div:first-child b{color:var(--meal)} .sumrow div:last-child b{color:var(--sym)}
+.list{display:flex;flex-direction:column}
+.item{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:.5px solid var(--line);text-align:left;width:100%}
+.item:last-child{border-bottom:none}
+.dot{width:8px;height:8px;border-radius:50%;flex:none}
+.dot.m{background:var(--meal)} .dot.s{background:var(--sym)}
+.item-time{font-variant-numeric:tabular-nums;color:var(--muted);font-size:14px;min-width:96px}
+.item-text{flex:1;font-size:15px}
+.item::after{content:"";width:7px;height:7px;border-right:2px solid #c4c4c7;border-top:2px solid #c4c4c7;transform:rotate(45deg);margin-right:4px;flex:none}
+.empty{text-align:center;padding:10px 0}
+.dayhead{font-size:13px;color:var(--muted);margin:14px 0 2px;font-weight:600}
+
+.daynav{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.daynav .lbl{font-weight:700;font-size:17px}
+.navbtn{width:34px;height:34px;border-radius:50%;background:var(--fill);font-size:20px;color:var(--accent);line-height:1}
+.textbtn{padding:6px 12px;border-radius:999px;background:var(--fill);font-size:14px;color:var(--accent);font-weight:600}
+svg.tl{width:100%;height:auto;display:block;margin-top:10px}
+svg .grid{stroke:var(--line);stroke-width:.6}
+svg .tick{fill:var(--muted);font-size:10px}
+svg .lane{fill:var(--lane)}
+svg .tl-meal{fill:var(--meal);stroke:var(--meal);stroke-width:1;cursor:pointer}
+svg .tl-sym{fill:var(--sym);stroke:var(--card);stroke-width:1.5;cursor:pointer}
+svg .tl-symdur{stroke:var(--sym);stroke-opacity:.3;stroke-width:5;stroke-linecap:round}
+svg .nowline{stroke:var(--red);stroke-width:1;stroke-dasharray:3 3}
+svg .lanelbl{fill:var(--muted);font-size:10.5px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:8px}
+.legend i{display:inline-block;width:12px;height:8px;border-radius:2px;margin-right:4px;vertical-align:middle}
+.btnrow{display:flex;gap:10px;margin-top:12px}
+.btnrow > *{flex:1}
+
+.primary{background:var(--accent);color:var(--on-accent);border-radius:12px;padding:13px 16px;font-weight:600}
+.secondary{background:var(--fill);color:var(--accent);border-radius:12px;padding:13px 16px;font-weight:600}
+.danger{background:var(--fill);color:var(--red);border-radius:12px;padding:13px 16px;font-weight:600}
+.ghost{width:100%;padding:12px;color:var(--accent);margin-top:6px;font-weight:500}
+
+.seg{display:flex;background:var(--fill);border-radius:9px;padding:2px;gap:2px;flex-wrap:wrap}
+.seg button{flex:1;padding:6px 6px;border-radius:7px;font-size:14px;min-width:52px;font-weight:500}
+.seg button.on{background:var(--seg-on);font-weight:600;box-shadow:0 3px 8px rgba(0,0,0,.12),0 1px 1px rgba(0,0,0,.04)}
+
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{background:var(--card);border:.5px solid var(--line);border-radius:12px;padding:10px 12px}
+.stat .v{font-size:26px;font-weight:700}
+.stat .k{font-size:13px;color:var(--muted)}
+table.slots{width:100%;border-collapse:collapse;font-size:15px}
+table.slots th{font-weight:600;color:var(--muted);text-align:left;font-size:12px;padding:4px 4px 6px}
+table.slots td{padding:9px 4px;border-top:.5px solid var(--line);font-variant-numeric:tabular-nums}
+.cmp{padding:14px 0;border-top:.5px solid var(--line)}
+.cmp:first-of-type{border-top:none}
+.cmp h3{margin:0 0 8px;font-size:16px;font-weight:600}
+.bar{display:grid;grid-template-columns:118px 1fr 76px;align-items:center;gap:8px;font-size:13px;margin:5px 0}
+.bar .track{height:12px;background:var(--fill);border-radius:6px;overflow:hidden}
+.bar .fill{height:100%;background:var(--sym);border-radius:6px}
+.bar .fill.b{background:var(--muted);opacity:.5}
+.bar .num{text-align:right;font-variant-numeric:tabular-nums}
+.finding{font-size:14px;margin:8px 0 0;color:var(--ink2)}
+.warn{display:inline-block;font-size:12px;background:var(--warn-bg);color:var(--warn);border-radius:8px;padding:3px 8px;margin-top:8px}
+.note{font-size:13px;color:var(--muted);padding:10px 4px 0;margin-top:6px}
+
+.field{margin:12px 0}
+.field label,.label{display:block;font-size:13px;color:var(--muted);margin:16px 4px 6px;font-weight:400;text-transform:none}
+.input,textarea{width:100%;padding:11px 12px;border-radius:10px;border:none;background:var(--fill)}
+textarea{min-height:64px;resize:vertical}
+.check{display:flex;align-items:center;gap:8px;font-size:15px;margin-top:10px}
+.setrow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 0;border-top:.5px solid var(--line);font-size:16px}
+.setrow:first-of-type{border-top:none}
+.setrow input{width:72px;text-align:center;padding:7px 8px}
+.addrow{display:flex;gap:8px;margin-top:12px}
+.addrow input{flex:1}
+
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:10;background:var(--tabbar);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-top:.5px solid var(--line);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom)}
+.tabbar .in{display:flex;max-width:560px;width:100%}
+.tab{flex:1;padding:7px 0 8px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10.5px;font-weight:500;color:var(--muted)}
+.tab svg{width:26px;height:26px}
+.tab.on{color:var(--accent)}
+
+.modal{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.4);display:flex;align-items:flex-end;justify-content:center;animation:fade .15s}
+.sheet{background:var(--bg);width:100%;max-width:560px;max-height:90vh;overflow:auto;border-radius:14px 14px 0 0;padding:8px 18px calc(22px + env(safe-area-inset-bottom));animation:up .25s cubic-bezier(.2,.8,.2,1)}
+.sheet::before{content:"";display:block;width:36px;height:5px;border-radius:3px;background:var(--muted);opacity:.4;margin:0 auto 14px}
+.sheet h2{margin:0 0 4px;font-size:22px;font-weight:700}
+@keyframes up{from{transform:translateY(60px);opacity:.4}to{transform:none;opacity:1}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.scale{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:14px}
+.scale-btn{display:flex;flex-direction:column;align-items:center;padding:14px 2px;border-radius:14px;color:var(--ink)}
+.scale-btn b{font-size:28px;line-height:1.1;font-weight:700}
+.scale-btn span{font-size:12px}
+.f1{background:color-mix(in srgb,var(--meal) 14%,var(--card))}.f2{background:color-mix(in srgb,var(--meal) 32%,var(--card))}.f3{background:color-mix(in srgb,var(--meal) 52%,var(--card))}.f4{background:color-mix(in srgb,var(--meal) 78%,var(--card));color:var(--on-meal)}.f5{background:var(--meal);color:var(--on-meal)}
+.i1{background:color-mix(in srgb,var(--sym) 14%,var(--card))}.i2{background:color-mix(in srgb,var(--sym) 32%,var(--card))}.i3{background:color-mix(in srgb,var(--sym) 52%,var(--card))}.i4{background:color-mix(in srgb,var(--sym) 78%,var(--card));color:var(--on-sym)}.i5{background:var(--sym);color:var(--on-sym)}
+.opt-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.opt-grid button{background:var(--card);border-radius:12px;padding:14px 8px;font-weight:600;color:var(--accent)}
+.opt-grid button:disabled{opacity:.35}
+.opt-grid button.soft{background:transparent;border:1px solid var(--line);color:var(--ink2)}
+.inline{display:flex;gap:8px;margin-top:10px}
+.inline .input{flex:1;background:var(--card)}
+.sheet .input,.sheet textarea{background:var(--card)}
+.sheet .chip{background:var(--card)}
+.sheet .chip.on{background:var(--meal);color:var(--on-meal)} .sheet .symchips .chip.on{background:var(--sym);color:var(--on-sym)} .sheet .chip.none.on{background:var(--ink2)}
+
+.minirow{display:flex;gap:8px;margin:-2px 0 10px}
+.mini{flex:1;background:var(--card);border-radius:12px;padding:11px 8px;font-size:15px;font-weight:600;color:var(--accent)}
+.themebtn{position:absolute;right:20px;bottom:10px;width:36px;height:36px;border-radius:50%;background:var(--fill);color:var(--accent);display:grid;place-items:center}
+.themebtn svg{width:20px;height:20px}
+.topbar{position:sticky}
+.nowbtn{width:100%;margin-top:14px;padding:16px;font-size:18px;border-radius:14px}
+.primary.nowbtn{background:var(--meal);color:var(--on-meal)}
+.headline{font-size:17px;margin:2px 0 4px;line-height:1.5}
+.headline b{color:var(--sym)}
+.factor{padding:12px 0;border-top:.5px solid var(--line)}
+.fhead{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;font-size:16px}
+.rank{width:22px;height:22px;border-radius:50%;background:var(--sym);color:var(--on-sym);font-size:13px;font-weight:700;display:grid;place-items:center}
+.lvl{font-size:12px;padding:2px 8px;border-radius:999px;font-weight:600}
+.lvl.hi{background:var(--sym-soft);color:var(--sym)} .lvl.mid{background:var(--fill);color:var(--ink2)} .lvl.few{background:var(--fill);color:var(--muted);font-weight:500}
+.ten{display:grid;grid-template-columns:104px 1fr 54px;align-items:center;gap:8px;font-size:14px;margin:4px 0}
+.ten .tl-lbl{color:var(--ink2)} .ten .tn{text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)}
+.dots{display:flex;gap:4px}
+.dots i{width:13px;height:13px;border-radius:50%;background:var(--fill);flex:none}
+.dots i.on{background:var(--sym)} .dots i.on2{background:var(--muted)}
+.unclear{font-size:14px;color:var(--ink2);margin:12px 0 0;padding-top:12px;border-top:.5px solid var(--line)}
+.unclear span{color:var(--muted)}
+.avgv{color:var(--ink);font-weight:700;font-variant-numeric:tabular-nums}
+.raw{font-size:12.5px;color:var(--muted);margin:6px 0 0}
+.prog{display:grid;grid-template-columns:64px 1fr 40px 1fr 40px;align-items:center;gap:6px;font-size:13px;margin:6px 0}
+.pbar{height:6px;background:var(--fill);border-radius:3px;overflow:hidden}.pbar i{display:block;height:100%;background:var(--sym);border-radius:3px}
+.phead{font-size:12px;color:var(--muted);margin-bottom:0}
+.pn{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.how{margin-top:12px;font-size:13px;color:var(--ink2)}.how summary{color:var(--accent);cursor:pointer;font-weight:600}.how p{margin:8px 0 0;line-height:1.6}
+#toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(16px);background:rgba(30,30,32,.88);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);color:#fff;padding:10px 18px;border-radius:14px;font-size:15px;opacity:0;pointer-events:none;transition:all .25s;z-index:30;max-width:90vw;text-align:center}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<header class="topbar"><div class="eyebrow" id="eyebrow">食刻</div><h1 id="pageTitle">摘要</h1><button class="themebtn" id="themeBtn" aria-label="切換深淺色"></button></header>
+
+<main>
+  <section id="page-home" class="page active"></section>
+  <section id="page-timeline" class="page"></section>
+  <section id="page-stats" class="page"></section>
+  <section id="page-settings" class="page"></section>
+</main>
+
+<nav class="tabbar"><div class="in">
+  <button class="tab on" data-page="home"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.1 0 3.5 1.1 4.3 2.4h2c.8-1.3 2.2-2.4 4.3-2.4 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z"/></svg>摘要</button>
+  <button class="tab" data-page="timeline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>時間軸</button>
+  <button class="tab" data-page="stats"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="12" width="4" height="9" rx="1.2"/><rect x="10" y="7" width="4" height="14" rx="1.2"/><rect x="17" y="3" width="4" height="18" rx="1.2"/></svg>趨勢</button>
+  <button class="tab" data-page="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>設定</button>
+</div></nav>
+
+<div id="modal" class="modal hidden"><div class="sheet" id="sheet"></div></div>
+<div id="toast"></div>
+
+<script>
+/* ========== 基本設定與資料 ========== */
+const KEY = 'shike-v1';
+const NONE = 'none';            // 「都沒有」標籤
+const FAST_MIN = 25;            // 少於幾分鐘算吃太快
+const MIN_N = 30;               // 樣本數門檻
+const FULL = ['', '還很餓', '有點餓', '剛好', '有點撐', '很撐'];
+const DEFAULTS = {
+  reminderMinutes: 25, repeatMinutes: 10, lateHour: 20, symptomWindowHours: 3,
+  theme: 'auto', colors: { meal: '#1E9E97', sym: '#D9822B', accent: '#2A86A3' },
+  foodTags: ['炸的', '辣的', '甜點', '酸的', '乳製品'],
+  symptomTags: ['火燒心', '胸口痛', '胃痛', '咳嗽', '想吐', '胸口悶', '脹氣']
+};
+const $ = s => document.querySelector(s);
+const pad = n => String(n).padStart(2, '0');
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function load() {
+  try {
+    const d = JSON.parse(localStorage.getItem(KEY));
+    if (d && Array.isArray(d.meals)) {
+      d.symptoms = d.symptoms || [];
+      d.settings = Object.assign({}, DEFAULTS, d.settings || {});
+      return d;
+    }
+  } catch (e) {}
+  return { meals: [], symptoms: [], settings: Object.assign({}, DEFAULTS) };
+}
+let db = load();
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(db)); }
+  catch (e) { toast('儲存失敗，瀏覽器可能不允許儲存資料'); }
+}
+
+/* ========== 時間工具 ========== */
+const WD = '日一二三四五六';
+const ms = d => new Date(d).getTime();
+const fmtHM = d => { d = new Date(d); return pad(d.getHours()) + ':' + pad(d.getMinutes()); };
+const dayKey = d => { d = new Date(d); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); };
+const startOfDay = d => { d = new Date(d); d.setHours(0, 0, 0, 0); return d.getTime(); };
+const fmtDay = d => { d = new Date(d); return (d.getMonth() + 1) + '/' + d.getDate() + '（' + WD[d.getDay()] + '）'; };
+const fmtDur = t => { const m = Math.round(t / 60000); return m < 60 ? m + ' 分鐘' : Math.floor(m / 60) + ' 小時' + (m % 60 ? ' ' + (m % 60) + ' 分' : ''); };
+const fmtClock = t => { const s = Math.max(0, Math.floor(t / 1000)); const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), x = s % 60; return h ? h + ':' + pad(m) + ':' + pad(x) : pad(m) + ':' + pad(x); };
+const toLocalInput = iso => iso ? dayKey(iso) + 'T' + fmtHM(iso) : '';
+const fromLocalInput = v => v ? new Date(v).toISOString() : null;
+const minOfDay = d => { d = new Date(d); return d.getHours() * 60 + d.getMinutes(); };
+const fmtMin = m => { m = ((Math.round(m) % 1440) + 1440) % 1440; return pad(Math.floor(m / 60)) + ':' + pad(m % 60); };
+
+/* ========== 資料小工具 ========== */
+const isActive = m => !m.end && !m.endUnknown;
+const activeMeal = () => db.meals.filter(isActive).pop();
+const durMs = m => (m.end && !m.endUnknown) ? ms(m.end) - ms(m.start) : null;
+const tagLabel = t => t === NONE ? '都沒有' : t;
+const typesText = s => s.types.map(t => (t === '其他' && s.note) ? s.note : t).join('、');
+function mealText(m) {
+  const p = [];
+  if (isActive(m)) p.push('吃飯中');
+  else if (m.endUnknown) p.push('結束時間不明');
+  else p.push('吃了 ' + fmtDur(durMs(m)));
+  if (m.fullness) p.push('飽 ' + m.fullness);
+  if (m.tags && m.tags.length) p.push(m.tags.map(tagLabel).join('、'));
+  return p.join(' · ');
+}
+function mealTimeText(m) {
+  if (isActive(m)) return fmtHM(m.start) + ' 起';
+  if (m.endUnknown) return fmtHM(m.start) + '～？';
+  return fmtHM(m.start) + '～' + fmtHM(m.end);
+}
+function symText(s) {
+  let t = typesText(s) + ' · 強度 ' + s.intensity;
+  if (s.endTime) t += ' · ' + (s.durOver ? '2 小時以上' : fmtDur(ms(s.endTime) - ms(s.time)));
+  return t;
+}
+function foodChips(selected) {
+  return db.settings.foodTags.map(t => `<button type="button" class="chip ${selected.includes(t) ? 'on' : ''}" data-tag="${esc(t)}">${esc(t)}</button>`).join('')
+    + `<button type="button" class="chip none ${selected.includes(NONE) ? 'on' : ''}" data-tag="${NONE}">都沒有</button>`;
+}
+function toggleFood(tags, t) {
+  if (t === NONE) return tags.includes(NONE) ? [] : [NONE];
+  const r = tags.filter(x => x !== NONE);
+  return r.includes(t) ? r.filter(x => x !== t) : [...r, t];
+}
+function itemRow(e) {
+  const o = e.o;
+  const time = e.k === 'm' ? mealTimeText(o) : fmtHM(o.time);
+  const text = e.k === 'm' ? '🍚 ' + mealText(o) : '😣 ' + symText(o);
+  return `<button class="item" data-kind="${e.k}" data-id="${o.id}"><span class="dot ${e.k}"></span><span class="item-time">${time}</span><span class="item-text">${esc(text)}</span></button>`;
+}
+const events = (meals, syms) => [
+  ...meals.map(m => ({ t: ms(m.start), k: 'm', o: m })),
+  ...syms.map(s => ({ t: ms(s.time), k: 's', o: s }))
+];
+
+/* ========== 提示、彈出面板 ========== */
+let toastTimer;
+function toast(msg, dur = 2400) {
+  const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), dur);
+}
+let sheetOpen = false; const queue = [];
+function openSheet(build) {
+  if (sheetOpen) { queue.push(build); return; }
+  sheetOpen = true;
+  const s = $('#sheet'); s.innerHTML = ''; s.scrollTop = 0;
+  build(s);
+  $('#modal').classList.remove('hidden');
+}
+function closeSheet() {
+  $('#modal').classList.add('hidden'); $('#sheet').innerHTML = '';
+  sheetOpen = false; renderCurrent();
+  if (queue.length) { const b = queue.shift(); setTimeout(() => openSheet(b), 180); }
+}
+$('#modal').addEventListener('click', e => { if (e.target.id === 'modal') closeSheet(); });
+
+/* ========== F1 吃飯紀錄 ========== */
+function startMeal(atIso) {
+  const st = atIso || new Date().toISOString();
+  const m = { id: uid(), start: st, end: null, fullness: null, tags: [], note: '', notified: dueCount(Date.now() - ms(st)) };
+  db.meals.push(m); save(); renderCurrent(); tick();
+  toast(atIso ? '從 ' + fmtHM(st) + ' 開始計時' : '開始計時，慢慢吃');
+  askNotifPermission();
+  maybeAskSymptomDuration();
+}
+function finishMeal() {
+  const a = activeMeal(); if (!a) return;
+  a.end = new Date().toISOString(); save();
+  askFullness(a, () => { toast('已記錄，吃了 ' + fmtDur(durMs(a))); maybeAskSymptomDuration(); });
+  tick();
+}
+function askFullness(meal, done) {
+  openSheet(s => {
+    meal.tags = meal.tags || [];
+    s.innerHTML = `<h2>這餐怎麼樣？</h2>
+      <p class="muted small">${meal.endUnknown ? '結束時間不明' : fmtHM(meal.start) + '～' + fmtHM(meal.end) + '，吃了 ' + fmtDur(durMs(meal))}</p>
+      <span class="label">吃了什麼（選填，可複選）</span>
+      <div class="chips" id="fTags">${foodChips(meal.tags)}</div>
+      <span class="label">吃完多飽（點了就存檔）</span>
+      <div class="scale">${[1, 2, 3, 4, 5].map(i => `<button class="scale-btn f${i}" data-v="${i}"><b>${i}</b><span>${FULL[i]}</span></button>`).join('')}</div>
+      <button class="ghost" data-skip>不填飽腹感，直接存</button>`;
+    const bindF = () => s.querySelectorAll('#fTags .chip').forEach(c => c.onclick = () => { meal.tags = toggleFood(meal.tags, c.dataset.tag); save(); s.querySelector('#fTags').innerHTML = foodChips(meal.tags); bindF(); });
+    bindF();
+    s.querySelectorAll('[data-v]').forEach(b => b.onclick = () => { meal.fullness = +b.dataset.v; save(); closeSheet(); done && done(); });
+    s.querySelector('[data-skip]').onclick = () => { closeSheet(); done && done(); };
+  });
+}
+
+/* ========== F2 提醒：分頁標題、通知、開啟時補登 ========== */
+function tick() {
+  const a = activeMeal();
+  if (a) {
+    const t = Date.now() - ms(a.start);
+    const el = $('#timer'); if (el) el.textContent = fmtClock(t);
+    document.title = '🍚 ' + fmtClock(t) + ' 吃飯中｜食刻';
+    checkNotify(a, t);
+  } else {
+    document.title = '食刻';
+  }
+}
+function dueCount(t) {
+  const st = db.settings, min = t / 60000;
+  if (min < st.reminderMinutes) return 0;
+  return 1 + Math.floor((min - st.reminderMinutes) / Math.max(1, st.repeatMinutes));
+}
+function checkNotify(a, t) {
+  const due = dueCount(t);
+  if (due <= (a.notified || 0)) return;
+  a.notified = due; save();
+  const mins = Math.floor(t / 60000);
+  const sent = notify('吃完了嗎？', '這餐已經 ' + mins + ' 分鐘了，吃完記得按「吃完了」');
+  if (!document.hidden || !sent) toast('已經吃了 ' + mins + ' 分鐘，吃完記得按「吃完了」', 5000);
+  if (navigator.vibrate) { try { navigator.vibrate([200, 100, 200]); } catch (e) {} }
+}
+function notify(title, body) {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return false;
+  try {
+    const n = new Notification(title, { body, tag: 'shike-meal', renotify: true });
+    n.onclick = () => { window.focus(); n.close(); };
+    return true;
+  } catch (e) { return false; }
+}
+async function askNotifPermission() {
+  if (!('Notification' in window) || Notification.permission !== 'default') return;
+  try { await Notification.requestPermission(); } catch (e) {}
+}
+function checkStaleMeal() {
+  const a = activeMeal(); if (!a) return;
+  const elapsed = Date.now() - ms(a.start);
+  if (elapsed < db.settings.reminderMinutes * 60000) return;
+  openSheet(s => {
+    const opt = (m, label) => `<button data-m="${m}" ${ms(a.start) + m * 60000 > Date.now() ? 'disabled' : ''}>${label}</button>`;
+    s.innerHTML = `<h2>上一餐還沒結束</h2>
+      <p class="muted small">${fmtDay(a.start)} ${fmtHM(a.start)} 開始，已經過了 ${fmtDur(elapsed)}。大概幾點吃完的？</p>
+      <div class="opt-grid">
+        <button data-m="now">剛剛</button>${opt(20, '開始後 20 分鐘')}${opt(30, '開始後 30 分鐘')}${opt(45, '開始後 45 分鐘')}
+      </div>
+      <div class="inline"><input type="time" class="input" id="customEnd"><button class="secondary" id="customOk">用這個時間</button></div>
+      <div class="opt-grid"><button class="soft" data-m="forgot">忘記了</button><button class="soft" data-m="still">我還在吃</button></div>`;
+    const finish = iso => {
+      a.end = iso; save(); closeSheet();
+      askFullness(a, () => toast('已補登，吃了 ' + fmtDur(durMs(a))));
+    };
+    s.querySelectorAll('[data-m]').forEach(b => b.onclick = () => {
+      const m = b.dataset.m;
+      if (m === 'still') { closeSheet(); return; }
+      if (m === 'forgot') { a.endUnknown = true; a.end = null; save(); closeSheet(); askFullness(a, () => toast('已記錄，這餐時間標記為不明')); return; }
+      if (m === 'now') { finish(new Date().toISOString()); return; }
+      finish(new Date(ms(a.start) + (+m) * 60000).toISOString());
+    });
+    s.querySelector('#customOk').onclick = () => {
+      const v = s.querySelector('#customEnd').value;
+      if (!v) { toast('先選一個時間'); return; }
+      const [h, mi] = v.split(':').map(Number);
+      const d = new Date(a.start); d.setHours(h, mi, 0, 0);
+      if (d.getTime() < ms(a.start)) d.setDate(d.getDate() + 1);
+      if (d.getTime() > Date.now()) { toast('這個時間還沒到喔'); return; }
+      finish(d.toISOString());
+    };
+  });
+}
+
+/* ========== F3 症狀紀錄 ========== */
+function openSymptomSheet(atMs) {
+  const st = { types: [] };
+  openSheet(s => {
+    s.innerHTML = `<h2>哪裡不舒服？</h2>
+      ${atMs ? `<p class="muted small">從 ${fmtHM(atMs)} 開始</p>` : ''}
+      <span class="label">症狀（可複選）</span>
+      <div class="chips symchips" id="symTypes">${db.settings.symptomTags.map(t => `<button type="button" class="chip" data-t="${esc(t)}">${esc(t)}</button>`).join('')}<button type="button" class="chip" data-t="其他">其他</button></div>
+      <input class="input hidden" id="symOther" placeholder="其他症狀，例如：喉嚨卡卡" style="margin-top:8px">
+      <span class="label">強度（點了就存檔）</span>
+      <div class="scale">${[1, 2, 3, 4, 5].map(i => `<button class="scale-btn i${i}" data-i="${i}"><b>${i}</b><span>${['', '一點點', '有感', '不舒服', '很難受', '非常痛苦'][i]}</span></button>`).join('')}</div>`;
+    s.querySelectorAll('#symTypes .chip').forEach(b => b.onclick = () => {
+      const t = b.dataset.t; b.classList.toggle('on');
+      st.types = b.classList.contains('on') ? [...st.types, t] : st.types.filter(x => x !== t);
+      if (t === '其他') { s.querySelector('#symOther').classList.toggle('hidden', !b.classList.contains('on')); if (b.classList.contains('on')) s.querySelector('#symOther').focus(); }
+    });
+    s.querySelectorAll('[data-i]').forEach(b => b.onclick = () => {
+      if (!st.types.length) { toast('先選一個症狀'); return; }
+      const other = s.querySelector('#symOther').value.trim();
+      const time = new Date(atMs || Date.now());
+      db.symptoms.push({ id: uid(), time: time.toISOString(), endTime: null, types: st.types, intensity: +b.dataset.i, note: st.types.includes('其他') ? other : '' });
+      save(); closeSheet(); toast('記下來了，希望快點舒服');
+    });
+  });
+}
+function askSymptomStart() {
+  openSheet(el => {
+    el.innerHTML = `<h2>症狀什麼時候開始的？</h2>
+      <p class="muted small">選好時間後，再選症狀跟強度</p>
+      <button class="primary nowbtn" data-ago="0" style="background:var(--sym);color:var(--on-sym)">現在</button>
+      <div class="opt-grid">${[[5, '5 分鐘前'], [10, '10 分鐘前'], [15, '15 分鐘前'], [30, '30 分鐘前'], [60, '1 小時前'], [120, '2 小時前']].map(([m, l]) => `<button data-ago="${m}">${l}</button>`).join('')}</div>
+      <div class="inline"><input type="time" class="input" id="ssT" value="${fmtHM(Date.now())}"><button class="secondary" id="ssOk">用這個時間</button></div>
+      <button class="ghost" data-cancel>取消</button>`;
+    const next = t => { closeSheet(); setTimeout(() => openSymptomSheet(Date.now() - t < 30000 ? null : t), 0); };
+    el.querySelectorAll('[data-ago]').forEach(b => b.onclick = () => next(Date.now() - (+b.dataset.ago) * 60000));
+    el.querySelector('#ssOk').onclick = () => {
+      const v = el.querySelector('#ssT').value; if (!v) { toast('先選一個時間'); return; }
+      const [h, mi] = v.split(':').map(Number), d = new Date(); d.setHours(h, mi, 0, 0);
+      if (d.getTime() > Date.now()) d.setDate(d.getDate() - 1);
+      next(d.getTime());
+    };
+    el.querySelector('[data-cancel]').onclick = closeSheet;
+  });
+}
+const askedThisSession = new Set();
+function maybeAskSymptomDuration() {
+  const s = db.symptoms.find(x => !x.endTime && !x.durAsked && !askedThisSession.has(x.id) && Date.now() - ms(x.time) > 30 * 60000);
+  if (!s) return;
+  askedThisSession.add(s.id);
+  openSheet(el => {
+    el.innerHTML = `<h2>剛剛的症狀大概持續多久？</h2>
+      <p class="muted small">${fmtDay(s.time)} ${fmtHM(s.time)} · ${esc(typesText(s))} · 強度 ${s.intensity}</p>
+      <div class="opt-grid">
+        <button data-d="15">15 分鐘</button><button data-d="30">30 分鐘</button>
+        <button data-d="60">1 小時</button><button data-d="120">2 小時以上</button>
+        <button class="soft" data-d="unknown">不記得</button><button class="soft" data-d="still">還沒好</button>
+      </div>
+      <button class="ghost" data-skip>略過</button>`;
+    el.querySelectorAll('[data-d]').forEach(b => b.onclick = () => {
+      const d = b.dataset.d;
+      if (d === 'still') { closeSheet(); return; }
+      if (d === 'unknown') { s.durAsked = true; }
+      else {
+        s.endTime = new Date(Math.min(ms(s.time) + (+d) * 60000, Date.now())).toISOString();
+        s.durAsked = true; if (d === '120') s.durOver = true;
+      }
+      save(); closeSheet(); toast('謝謝，記好了');
+    });
+    el.querySelector('[data-skip]').onclick = () => { s.durAsked = true; save(); closeSheet(); };
+  });
+}
+
+function askStartTime(existing) {
+  openSheet(el => {
+    el.innerHTML = `<h2>${existing ? '調整開始時間' : '什麼時候開始吃的？'}</h2>
+      <p class="muted small">選好之後會從那個時間開始計時</p>
+      ${existing ? '' : '<button class="primary nowbtn" data-ago="0">現在開始</button>'}
+      <div class="opt-grid">${[5, 10, 15, 20].map(m => `<button data-ago="${m}">${m} 分鐘前</button>`).join('')}</div>
+      <div class="inline"><input type="time" class="input" id="stT" value="${fmtHM(Date.now())}"><button class="secondary" id="stOk">用這個時間</button></div>
+      <button class="ghost" data-cancel>取消</button>`;
+    const done = t => {
+      if (t > Date.now()) { toast('這個時間還沒到喔'); return; }
+      if (existing) {
+        existing.start = new Date(t).toISOString(); existing.notified = dueCount(Date.now() - t);
+        save(); closeSheet(); tick(); toast('開始時間改成 ' + fmtHM(t));
+      } else { closeSheet(); startMeal(Date.now() - t < 30000 ? null : new Date(t).toISOString()); }
+    };
+    el.querySelectorAll('[data-ago]').forEach(b => b.onclick = () => done(Date.now() - (+b.dataset.ago) * 60000));
+    el.querySelector('#stOk').onclick = () => {
+      const v = el.querySelector('#stT').value; if (!v) { toast('先選一個時間'); return; }
+      const [h, mi] = v.split(':').map(Number), d = new Date(); d.setHours(h, mi, 0, 0);
+      if (d.getTime() > Date.now()) d.setDate(d.getDate() - 1);
+      done(d.getTime());
+    };
+    el.querySelector('[data-cancel]').onclick = closeSheet;
+  });
+}
+function askSymptomEnd(s) {
+  openSheet(el => {
+    const t0 = ms(s.time);
+    el.innerHTML = `<h2>什麼時候好的？</h2>
+      <p class="muted small">${fmtHM(s.time)} 開始 · ${esc(typesText(s))} · 強度 ${s.intensity}</p>
+      <div class="opt-grid">${[[0, '現在'], [5, '5 分鐘前'], [10, '10 分鐘前'], [30, '30 分鐘前']].map(([m, l]) => `<button data-ago="${m}" ${Date.now() - m * 60000 < t0 ? 'disabled' : ''}>${l}</button>`).join('')}</div>
+      <div class="inline"><input type="time" class="input" id="seT" value="${fmtHM(Date.now())}"><button class="secondary" id="seOk">用這個時間</button></div>
+      <button class="ghost" data-cancel>取消</button>`;
+    const done = t => {
+      if (t > Date.now()) { toast('這個時間還沒到喔'); return; }
+      if (t < t0) { toast('要在開始時間之後喔'); return; }
+      s.endTime = new Date(t).toISOString(); s.durAsked = true; s.durOver = false;
+      save(); closeSheet(); toast('太好了，持續了 ' + fmtDur(t - t0));
+    };
+    el.querySelectorAll('[data-ago]').forEach(b => b.onclick = () => done(Date.now() - (+b.dataset.ago) * 60000));
+    el.querySelector('#seOk').onclick = () => {
+      const v = el.querySelector('#seT').value; if (!v) { toast('先選一個時間'); return; }
+      const [h, mi] = v.split(':').map(Number), d = new Date(s.time); d.setHours(h, mi, 0, 0);
+      if (d.getTime() < t0) d.setDate(d.getDate() + 1);
+      done(d.getTime());
+    };
+    el.querySelector('[data-cancel]').onclick = closeSheet;
+  });
+}
+
+/* ========== 外觀：深淺色切換與固定配色 ========== */
+const hexRgb = h => { h = h.replace('#', ''); if (h.length === 3) h = h.split('').map(c => c + c).join(''); const n = parseInt(h, 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; };
+const lum = h => { const c = hexRgb(h).map(v => { v /= 255; return v <= .03928 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4; }); return .2126 * c[0] + .7152 * c[1] + .0722 * c[2]; };
+const onColor = h => lum(h) > .5 ? '#1c1c1e' : '#ffffff';
+const soft = (h, a) => { const [r, g, b] = hexRgb(h); return `rgba(${r},${g},${b},${a})`; };
+const THEME_ICON = {
+  auto: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></svg>',
+  light: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+  dark: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>'
+};
+const THEME_NAME = { auto: '跟隨系統', light: '淺色', dark: '深色' };
+function applyTheme() {
+  const st = db.settings, r = document.documentElement, c = DEFAULTS.colors;
+  if (st.theme === 'light' || st.theme === 'dark') r.dataset.theme = st.theme; else delete r.dataset.theme;
+  r.style.setProperty('--meal', c.meal); r.style.setProperty('--meal-soft', soft(c.meal, .16)); r.style.setProperty('--on-meal', onColor(c.meal));
+  r.style.setProperty('--sym', c.sym); r.style.setProperty('--sym-soft', soft(c.sym, .16)); r.style.setProperty('--on-sym', onColor(c.sym));
+  r.style.setProperty('--accent', c.accent); r.style.setProperty('--done', c.accent); r.style.setProperty('--on-accent', onColor(c.accent));
+  const b = $('#themeBtn'); if (b) { b.innerHTML = THEME_ICON[st.theme] || THEME_ICON.auto; b.title = '外觀：' + THEME_NAME[st.theme]; }
+}
+$('#themeBtn').onclick = () => {
+  const order = ['auto', 'light', 'dark'], st = db.settings;
+  st.theme = order[(order.indexOf(st.theme) + 1) % 3]; save(); applyTheme();
+  toast('外觀：' + THEME_NAME[st.theme]);
+  if (current === 'settings') renderSettings();
+};
+
+/* ========== 首頁 ========== */
+function renderHome() {
+  const el = $('#page-home'), a = activeMeal(), now = Date.now(), t0 = startOfDay(now);
+  const tm = db.meals.filter(m => ms(m.start) >= t0);
+  const ts = db.symptoms.filter(s => ms(s.time) >= t0);
+  const ongoing = db.symptoms.filter(s => !s.endTime && !s.durAsked && now - ms(s.time) < 12 * 3600e3).sort((x, y) => ms(y.time) - ms(x.time));
+  let h = '';
+  if (a) {
+    h += `<button class="big meal-end" id="btnMeal"><span class="big-icon">✅</span><span class="big-label">吃完了</span>
+      <span class="big-sub">${fmtHM(a.start)} 開始，已經吃了 <b id="timer">${fmtClock(now - ms(a.start))}</b></span></button>
+      <div class="minirow"><button class="mini" id="btnAdjStart">調整開始時間</button></div>
+      <div class="card"><div class="card-title meal">這餐吃了什麼<span class="hint">選填，可複選</span></div><div class="chips" id="activeTags">${foodChips(a.tags)}</div></div>`;
+  } else {
+    h += `<button class="big meal-start" id="btnMeal"><span class="big-icon">🍚</span><span class="big-label">開始吃飯</span><span class="big-sub">按一下選開始時間</span></button>`;
+  }
+  h += `<button class="big symptom" id="btnSym"><span class="big-icon">😣</span><span class="big-label">症狀</span><span class="big-sub">按一下選開始時間</span></button>`;
+  if (ongoing.length) {
+    h += `<div class="card"><div class="card-title sym">症狀進行中<span class="hint">症狀消失就按「好了」</span></div>${ongoing.map(s => `
+      <div class="ongoing"><div><b>${esc(typesText(s))}</b><div class="muted small">${fmtHM(s.time)} 開始 · 強度 ${s.intensity}</div></div><button class="pill" data-ok="${s.id}">好了</button></div>`).join('')}</div>`;
+  }
+  const ev = events(tm, ts).sort((x, y) => x.t - y.t);
+  h += `<div class="card"><div class="card-title blue">今天<span class="hint">${fmtDay(now)}</span></div>
+    <div class="sumrow"><div><b>${tm.length}</b>餐</div><div><b>${ts.length}</b>次症狀</div></div>
+    ${ev.length ? `<div class="list">${ev.map(itemRow).join('')}</div>` : '<p class="muted small empty">今天還沒有紀錄</p>'}</div>`;
+  el.innerHTML = h;
+  el.querySelector('#btnMeal').onclick = () => activeMeal() ? finishMeal() : askStartTime(null);
+  el.querySelector('#btnSym').onclick = askSymptomStart;
+  const ba = el.querySelector('#btnAdjStart'); if (ba) ba.onclick = () => askStartTime(activeMeal());
+  el.querySelectorAll('#activeTags .chip').forEach(b => b.onclick = () => {
+    const m = activeMeal(); if (!m) return;
+    m.tags = toggleFood(m.tags || [], b.dataset.tag); save(); renderHome();
+  });
+  el.querySelectorAll('[data-ok]').forEach(b => b.onclick = () => {
+    const s = db.symptoms.find(x => x.id === b.dataset.ok); if (!s) return;
+    askSymptomEnd(s);
+  });
+}
+
+/* ========== F4 時間軸 + F7 紀錄管理 ========== */
+let tlDay = startOfDay(Date.now()), showAll = false, allLimit = 60;
+function timelineSVG(d0) {
+  const d1 = d0 + 864e5, now = Date.now(), W = 360, L = 40, R = 10, span = W - L - R;
+  const x = t => L + (Math.min(Math.max(t, d0), d1) - d0) / 864e5 * span;
+  // 症狀點太近時往下疊一層，避免重疊
+  const r = 6, gap = 2 * r + 3, step = 15;
+  const syms = db.symptoms.filter(s => { const t = ms(s.time); return t >= d0 && t < d1; }).sort((a, b) => ms(a.time) - ms(b.time));
+  const levels = [], placed = syms.map(s => {
+    const cx = x(ms(s.time));
+    let k = levels.findIndex(last => cx - last >= gap);
+    if (k < 0) { k = levels.length; levels.push(cx); } else levels[k] = cx;
+    return { s, cx, k };
+  });
+  const nLv = Math.max(1, levels.length), symTop = 64, symH = 16 + nLv * step, H = symTop + symH + 8;
+  let g = `<rect class="lane" x="${L}" y="24" width="${span}" height="32" rx="6"/><rect class="lane" x="${L}" y="${symTop}" width="${span}" height="${symH}" rx="6"/>`;
+  g += `<text class="lanelbl" x="${L - 6}" y="44" text-anchor="end">吃飯</text><text class="lanelbl" x="${L - 6}" y="${symTop + symH / 2 + 4}" text-anchor="end">症狀</text>`;
+  for (let hr = 0; hr <= 24; hr += 3) {
+    const xx = L + hr / 24 * span;
+    g += `<line class="grid" x1="${xx}" x2="${xx}" y1="20" y2="${H - 4}"/><text class="tick" x="${xx}" y="13" text-anchor="middle">${hr}</text>`;
+  }
+  db.meals.forEach(m => {
+    const s = ms(m.start);
+    const e = m.end ? ms(m.end) : (isActive(m) ? now : s + 15 * 60000);
+    if (e < d0 || s >= d1) return;
+    const x1 = x(s), x2 = Math.max(x(e), x1 + 4);
+    const dash = (m.endUnknown || isActive(m)) ? 'stroke-dasharray="3 2" fill-opacity="0.5"' : '';
+    g += `<rect class="tl-hit tl-meal" data-kind="m" data-id="${m.id}" x="${x1}" y="31" width="${x2 - x1}" height="18" rx="4" ${dash}><title>${esc(mealTimeText(m) + ' ' + mealText(m))}</title></rect>`;
+  });
+  placed.forEach(({ s, cx, k }) => {
+    g += `<circle class="tl-hit tl-sym" data-kind="s" data-id="${s.id}" cx="${cx}" cy="${symTop + 8 + r + k * step}" r="${r}"><title>${esc(fmtHM(s.time) + ' ' + symText(s))}</title></circle>`;
+  });
+  if (now >= d0 && now < d1) g += `<line class="nowline" x1="${x(now)}" x2="${x(now)}" y1="20" y2="${H - 4}"/>`;
+  return `<svg class="tl" viewBox="0 0 ${W} ${H}" role="img" aria-label="${fmtDay(d0)} 的吃飯與症狀時間軸">${g}</svg>`;
+}
+function timelineLegend() {
+  return `<div class="legend"><span><i style="background:var(--meal)"></i>吃飯</span><span><i style="background:var(--sym);width:10px;height:10px;border-radius:50%"></i>症狀</span><span>點一下看詳細、可編輯</span></div>`;
+}
+function renderTimeline() {
+  const el = $('#page-timeline'), d0 = tlDay, d1 = d0 + 864e5, isToday = d0 === startOfDay(Date.now());
+  const meals = db.meals.filter(m => { const s = ms(m.start), e = m.end ? ms(m.end) : s; return s < d1 && e >= d0; });
+  const syms = db.symptoms.filter(s => ms(s.time) >= d0 && ms(s.time) < d1);
+  const ev = events(meals, syms).sort((a, b) => a.t - b.t);
+  let h = `<div class="card">
+    <div class="daynav"><button class="navbtn" id="prevDay" aria-label="前一天">‹</button>
+      <div class="lbl">${isToday ? '今天 ' : ''}${fmtDay(d0)}</div>
+      <div style="display:flex;gap:6px">${isToday ? '' : '<button class="textbtn" id="today">今天</button>'}<button class="navbtn" id="nextDay" aria-label="後一天" ${isToday ? 'disabled style="opacity:.3"' : ''}>›</button></div></div>
+    ${timelineSVG(d0)}
+    ${timelineLegend()}
+  </div>
+  <div class="card"><div class="card-title blue">這一天的紀錄</div>
+    ${ev.length ? `<div class="list">${ev.map(itemRow).join('')}</div>` : '<p class="muted small empty">這天沒有紀錄</p>'}
+    <div class="btnrow"><button class="secondary" id="addMeal">＋ 補記一餐</button><button class="secondary" id="addSym">＋ 補記症狀</button></div>
+  </div>
+  <div class="card"><div class="card-title">全部紀錄<span class="hint">共 ${db.meals.length} 餐、${db.symptoms.length} 次症狀</span></div>
+    <button class="secondary" id="toggleAll" style="width:100%">${showAll ? '收起' : '展開全部紀錄'}</button>
+    ${showAll ? allRecords() : ''}
+  </div>`;
+  el.innerHTML = h;
+  el.querySelector('#prevDay').onclick = () => { tlDay = startOfDay(tlDay - 12 * 3600e3); renderTimeline(); };
+  el.querySelector('#nextDay').onclick = () => { if (!isToday) { tlDay = startOfDay(tlDay + 36 * 3600e3); renderTimeline(); } };
+  const tb = el.querySelector('#today'); if (tb) tb.onclick = () => { tlDay = startOfDay(Date.now()); renderTimeline(); };
+  el.querySelector('#addMeal').onclick = () => openMealEdit(null);
+  el.querySelector('#addSym').onclick = () => openSymptomEdit(null);
+  el.querySelector('#toggleAll').onclick = () => { showAll = !showAll; allLimit = 60; renderTimeline(); };
+  const more = el.querySelector('#moreAll'); if (more) more.onclick = () => { allLimit += 60; renderTimeline(); };
+}
+function allRecords() {
+  const ev = events(db.meals, db.symptoms).sort((a, b) => b.t - a.t);
+  if (!ev.length) return '<p class="muted small empty">還沒有任何紀錄</p>';
+  let h = '', last = '';
+  ev.slice(0, allLimit).forEach(e => {
+    const k = dayKey(e.t);
+    if (k !== last) { h += `<div class="dayhead">${fmtDay(e.t)}</div>`; last = k; }
+    h += itemRow(e);
+  });
+  if (ev.length > allLimit) h += `<button class="ghost" id="moreAll">顯示更多</button>`;
+  return `<div class="list">${h}</div>`;
+}
+document.addEventListener('click', e => {
+  const t = e.target.closest('.item, .tl-hit');
+  if (!t || t.closest('#sheet')) return;
+  if (t.dataset.kind === 'm') openMealEdit(t.dataset.id);
+  else if (t.dataset.kind === 's') openSymptomEdit(t.dataset.id);
+});
+function defaultTime() {
+  const today = startOfDay(Date.now());
+  return tlDay === today || !$('#page-timeline').classList.contains('active') ? new Date() : new Date(tlDay + 12 * 3600e3);
+}
+function openMealEdit(id) {
+  const m = id ? db.meals.find(x => x.id === id) : null;
+  if (id && !m) return;
+  const d = m ? JSON.parse(JSON.stringify(m)) : { start: defaultTime().toISOString(), end: new Date(defaultTime().getTime() + 25 * 60000).toISOString(), fullness: null, tags: [], note: '' };
+  if (!m && ms(d.end) > Date.now()) { d.start = new Date(Date.now() - 25 * 60000).toISOString(); d.end = new Date().toISOString(); }
+  openSheet(s => {
+    s.innerHTML = `<h2>${m ? '編輯這一餐' : '補記一餐'}</h2>
+      <span class="label">開始</span><input type="datetime-local" class="input" id="eStart" value="${toLocalInput(d.start)}">
+      <span class="label">結束</span><input type="datetime-local" class="input" id="eEnd" value="${toLocalInput(d.end)}">
+      <label class="check"><input type="checkbox" id="eUnknown" ${d.endUnknown ? 'checked' : ''}> 忘記結束時間</label>
+      <span class="label">飽腹感</span>
+      <div class="seg" id="eFull"><button data-v="0" class="${!d.fullness ? 'on' : ''}">未填</button>${[1, 2, 3, 4, 5].map(i => `<button data-v="${i}" class="${d.fullness === i ? 'on' : ''}">${i}</button>`).join('')}</div>
+      <span class="label">吃了什麼</span><div class="chips" id="eTags">${foodChips(d.tags || [])}</div>
+      <span class="label">備註</span><textarea id="eNote" placeholder="想補充什麼都可以">${esc(d.note || '')}</textarea>
+      <div class="btnrow">${m ? '<button class="danger" id="eDel">刪除</button>' : ''}<button class="primary" id="eSave">儲存</button></div>
+      <button class="ghost" data-cancel>取消</button>`;
+    const endIn = s.querySelector('#eEnd'), unk = s.querySelector('#eUnknown');
+    const syncUnk = () => { endIn.disabled = unk.checked; endIn.style.opacity = unk.checked ? .4 : 1; };
+    unk.onchange = syncUnk; syncUnk();
+    s.querySelectorAll('#eFull button').forEach(b => b.onclick = () => { s.querySelectorAll('#eFull button').forEach(x => x.classList.remove('on')); b.classList.add('on'); d.fullness = +b.dataset.v || null; });
+    const bindTags = () => s.querySelectorAll('#eTags .chip').forEach(b => b.onclick = () => { d.tags = toggleFood(d.tags || [], b.dataset.tag); s.querySelector('#eTags').innerHTML = foodChips(d.tags); bindTags(); });
+    bindTags();
+    s.querySelector('[data-cancel]').onclick = closeSheet;
+    s.querySelector('#eSave').onclick = () => {
+      const st = fromLocalInput(s.querySelector('#eStart').value);
+      const en = unk.checked ? null : fromLocalInput(endIn.value);
+      if (!st) { toast('請填開始時間'); return; }
+      if (ms(st) > Date.now()) { toast('開始時間不能在未來'); return; }
+      if (en && ms(en) < ms(st)) { toast('結束時間要在開始之後'); return; }
+      if (en && ms(en) > Date.now() + 60000) { toast('結束時間不能在未來'); return; }
+      if (!m && !en && !unk.checked) { toast('補記的餐請填結束時間，或勾選忘記結束時間'); return; }
+      const target = m || { id: uid(), notified: 0 };
+      Object.assign(target, { start: st, end: en, endUnknown: unk.checked, fullness: d.fullness || null, tags: d.tags || [], note: s.querySelector('#eNote').value.trim() });
+      if (!m) db.meals.push(target);
+      save(); closeSheet(); toast('已儲存');
+    };
+    const del = s.querySelector('#eDel');
+    if (del) del.onclick = () => { if (confirm('確定要刪除這一餐嗎？')) { db.meals = db.meals.filter(x => x.id !== m.id); save(); closeSheet(); toast('已刪除'); } };
+  });
+}
+function openSymptomEdit(id) {
+  const o = id ? db.symptoms.find(x => x.id === id) : null;
+  if (id && !o) return;
+  const d = o ? JSON.parse(JSON.stringify(o)) : { time: defaultTime().toISOString(), endTime: null, types: [], intensity: 3, note: '' };
+  const allTags = [...new Set([...db.settings.symptomTags, ...d.types.filter(t => t !== '其他'), '其他'])];
+  openSheet(s => {
+    s.innerHTML = `<h2>${o ? '編輯症狀' : '補記症狀'}</h2>
+      <span class="label">開始時間</span><input type="datetime-local" class="input" id="sTime" value="${toLocalInput(d.time)}">
+      <span class="label">緩解時間（選填）</span><input type="datetime-local" class="input" id="sEnd" value="${toLocalInput(d.endTime)}">
+      <span class="label">症狀</span><div class="chips symchips" id="sTypes">${allTags.map(t => `<button type="button" class="chip ${d.types.includes(t) ? 'on' : ''}" data-t="${esc(t)}">${esc(t)}</button>`).join('')}</div>
+      <span class="label">「其他」的內容或備註</span><input class="input" id="sNote" value="${esc(d.note || '')}">
+      <span class="label">強度</span><div class="seg" id="sInt">${[1, 2, 3, 4, 5].map(i => `<button data-v="${i}" class="${d.intensity === i ? 'on' : ''}">${i}</button>`).join('')}</div>
+      <div class="btnrow">${o ? '<button class="danger" id="sDel">刪除</button>' : ''}<button class="primary" id="sSave">儲存</button></div>
+      <button class="ghost" data-cancel>取消</button>`;
+    s.querySelectorAll('#sTypes .chip').forEach(b => b.onclick = () => { b.classList.toggle('on'); const t = b.dataset.t; d.types = b.classList.contains('on') ? [...d.types, t] : d.types.filter(x => x !== t); });
+    s.querySelectorAll('#sInt button').forEach(b => b.onclick = () => { s.querySelectorAll('#sInt button').forEach(x => x.classList.remove('on')); b.classList.add('on'); d.intensity = +b.dataset.v; });
+    s.querySelector('[data-cancel]').onclick = closeSheet;
+    s.querySelector('#sSave').onclick = () => {
+      const t = fromLocalInput(s.querySelector('#sTime').value), en = fromLocalInput(s.querySelector('#sEnd').value);
+      if (!t) { toast('請填開始時間'); return; }
+      if (ms(t) > Date.now()) { toast('時間不能在未來'); return; }
+      if (en && ms(en) < ms(t)) { toast('緩解時間要在開始之後'); return; }
+      if (!d.types.length) { toast('至少選一個症狀'); return; }
+      const target = o || { id: uid() };
+      Object.assign(target, { time: t, endTime: en, types: d.types, intensity: d.intensity, note: s.querySelector('#sNote').value.trim() });
+      if (en) { target.durAsked = true; target.durOver = false; }
+      if (!o) { target.durAsked = !!en || Date.now() - ms(t) > 6 * 3600e3; db.symptoms.push(target); }
+      save(); closeSheet(); toast('已儲存');
+    };
+    const del = s.querySelector('#sDel');
+    if (del) del.onclick = () => { if (confirm('確定要刪除這筆症狀嗎？')) { db.symptoms = db.symptoms.filter(x => x.id !== o.id); save(); closeSheet(); toast('已刪除'); } };
+  });
+}
+
+/* ========== F5 規律度統計 + F6 相關 ========== */
+let range = 7;
+const SLOTS = [
+  { k: 'b', name: '早餐', test: h => h >= 5 && h < 11 },
+  { k: 'l', name: '午餐', test: h => h >= 11 && h < 16 },
+  { k: 'd', name: '晚餐', test: h => h >= 16 && h < 21 },
+  { k: 'n', name: '宵夜', test: h => h >= 21 || h < 5 }
+];
+const slotOf = d => SLOTS.find(s => s.test(new Date(d).getHours()));
+const lateMin = d => { const h = new Date(d).getHours(); return minOfDay(d) + (h < 5 ? 1440 : 0); };
+const mean = a => a.reduce((x, y) => x + y, 0) / a.length;
+const sd = a => { if (a.length < 2) return null; const m = mean(a); return Math.sqrt(a.reduce((x, y) => x + (y - m) ** 2, 0) / (a.length - 1)); };
+
+function renderStats() {
+  const el = $('#page-stats'), now = Date.now(), today = startOfDay(now);
+  const from = today - (range - 1) * 864e5;
+  const meals = db.meals.filter(m => ms(m.start) >= from && !isActive(m));
+  const syms = db.symptoms.filter(s => ms(s.time) >= from);
+  const firstRec = Math.min(...[...db.meals.map(m => ms(m.start)), ...db.symptoms.map(s => ms(s.time))], now);
+  const dayFrom = Math.max(from, startOfDay(firstRec));
+  const days = []; for (let d = dayFrom; d <= today; d = startOfDay(d + 36 * 3600e3)) days.push(d);
+
+  // 每個餐別
+  const rows = SLOTS.map(sl => {
+    const list = meals.filter(m => slotOf(m.start).k === sl.k);
+    const mins = list.map(m => sl.k === 'n' ? lateMin(m.start) : minOfDay(m.start));
+    const missed = sl.k === 'n' ? null : days.filter(d => !meals.some(m => slotOf(m.start).k === sl.k && startOfDay(m.start) === d)).length;
+    return { sl, n: list.length, avg: mins.length ? fmtMin(mean(mins)) : '-', sd: sd(mins), missed };
+  });
+  const durs = meals.map(durMs).filter(x => x != null);
+  const fulls = meals.map(m => m.fullness).filter(Boolean);
+  const latest = meals.length ? meals.reduce((a, b) => lateMin(b.start) > lateMin(a.start) ? b : a) : null;
+
+  let h = `<div class="card"><div class="card-title">統計範圍</div>
+    <div class="seg" id="range">${[7, 14, 30].map(r => `<button data-r="${r}" class="${r === range ? 'on' : ''}">最近 ${r} 天</button>`).join('')}</div></div>`;
+
+  h += `<div class="card"><div class="card-title meal">規律度<span class="hint">波動越小代表越規律</span></div>
+    ${meals.length ? `<table class="slots"><tr><th>餐別</th><th>平均開始</th><th>波動</th><th>筆數</th><th>漏餐天數</th></tr>
+      ${rows.map(r => `<tr><td>${r.sl.name}</td><td>${r.avg}</td><td>${r.sd == null ? '-' : '±' + Math.round(r.sd) + ' 分'}</td><td>${r.n}</td><td>${r.missed == null ? '-' : r.missed + ' / ' + days.length}</td></tr>`).join('')}</table>
+    <div class="stat-grid" style="margin-top:12px">
+      <div class="stat"><div class="v">${latest ? fmtHM(latest.start) : '-'}</div><div class="k">最晚一餐${latest ? '・' + fmtDay(latest.start) : ''}</div></div>
+      <div class="stat"><div class="v">${durs.length ? Math.round(mean(durs) / 60000) + ' 分' : '-'}</div><div class="k">平均用餐時長</div></div>
+      <div class="stat"><div class="v">${fulls.length ? mean(fulls).toFixed(1) : '-'}</div><div class="k">平均飽腹感（1～5）</div></div>
+      <div class="stat"><div class="v">${syms.length}</div><div class="k">症狀次數</div></div>
+    </div>` : '<p class="muted small empty">這段期間還沒有吃飯紀錄</p>'}
+    <span class="label">每日症狀出現次數</span>${symBars(from, today, syms)}
+  </div>`;
+  h += SLOTS.map(sl => mealTrend(sl, from, today)).join('');
+
+  h += corrSection();
+  el.innerHTML = h;
+  el.querySelectorAll('#range button').forEach(b => b.onclick = () => { range = +b.dataset.r; renderStats(); });
+}
+function mealTrend(sl, from, today) {
+  const n = Math.round((today - from) / 864e5) + 1;
+  const days = Array.from({ length: n }, (_, i) => startOfDay(from + i * 864e5 + 3600e3));
+  const val = d => {
+    // 宵夜的凌晨算前一天晚上
+    const list = db.meals.filter(m => slotOf(m.start).k === sl.k && (sl.k === 'n' ? startOfDay(ms(m.start) - 5 * 3600e3) : startOfDay(m.start)) === d);
+    if (!list.length) return null;
+    return Math.min(...list.map(m => sl.k === 'n' ? lateMin(m.start) : minOfDay(m.start)));
+  };
+  const pts = days.map(d => ({ d, v: val(d) }));
+  const vs = pts.filter(p => p.v != null).map(p => p.v);
+  if (!vs.length) return '';
+  const avg = mean(vs);
+  let lo = Math.floor((Math.min(...vs) - 30) / 60) * 60, hi = Math.ceil((Math.max(...vs) + 30) / 60) * 60;
+  if (hi - lo < 120) { const c = (hi + lo) / 2; lo = Math.floor((c - 60) / 60) * 60; hi = lo + 120; }
+  const stepY = hi - lo <= 240 ? 60 : hi - lo <= 480 ? 120 : 180;
+  const W = 360, H = 176, L = 42, Rr = 12, T = 12, B = 38, pw = W - L - Rr, ph = H - T - B;
+  const X = i => L + (i + 0.5) * pw / n, Y = v => T + (hi - v) / (hi - lo) * ph;
+  let g = '';
+  for (let v = lo; v <= hi; v += stepY) g += `<line class="grid" x1="${L}" x2="${W - Rr}" y1="${Y(v)}" y2="${Y(v)}"/><text class="tick" x="${L - 6}" y="${Y(v) + 3}" text-anchor="end">${fmtMin(v)}</text>`;
+  g += `<line x1="${L}" x2="${W - Rr}" y1="${Y(avg)}" y2="${Y(avg)}" stroke="var(--muted)" stroke-width="1" stroke-dasharray="4 4"/>`;
+  let path = '', prev = null;
+  pts.forEach((p, i) => {
+    if (p.v == null) { prev = null; return; }
+    const x = X(i), y = Y(p.v);
+    if (!prev) path += `M${x} ${y}`;
+    else { const mx = (prev.x + x) / 2; path += `C${mx} ${prev.y} ${mx} ${y} ${x} ${y}`; }
+    prev = { x, y };
+  });
+  g += `<path d="${path}" fill="none" stroke="var(--meal)" stroke-width="2.2" stroke-opacity=".55" stroke-linecap="round"/>`;
+  const lstep = n <= 7 ? 1 : n <= 14 ? 2 : 5;
+  pts.forEach((p, i) => {
+    if (p.v != null) g += `<circle cx="${X(i)}" cy="${Y(p.v)}" r="${n > 14 ? 3.5 : 5}" fill="var(--meal)" stroke="var(--card)" stroke-width="1.5"><title>${fmtDay(p.d)} ${fmtMin(p.v)}</title></circle>`;
+    if (i % lstep === 0 || i === n - 1) {
+      const dt = new Date(p.d);
+      g += `<text class="tick" x="${X(i)}" y="${H - 22}" text-anchor="middle">${WD[dt.getDay()]}</text><text class="tick" x="${X(i)}" y="${H - 9}" text-anchor="middle">${dt.getMonth() + 1}/${dt.getDate()}</text>`;
+    }
+  });
+  const sdv = sd(vs);
+  return `<div class="card"><div class="card-title meal">${sl.name}時間<span class="hint">平均 <b class="avgv">${fmtMin(avg)}</b>${sdv != null ? '　波動 ±' + Math.round(sdv) + ' 分' : ''}</span></div>
+    <svg class="tl" viewBox="0 0 ${W} ${H}" role="img" aria-label="${sl.name}開始時間趨勢">${g}</svg>
+    <div class="legend"><span><i style="background:var(--meal);width:9px;height:9px;border-radius:50%"></i>當天${sl.name}開始時間</span><span><i style="background:none;border-top:1.5px dashed var(--muted);height:0;width:14px;border-radius:0"></i>平均</span><span>沒有點代表那天沒吃</span></div></div>`;
+}
+function symBars(from, today, syms) {
+  const n = Math.round((today - from) / 864e5) + 1, W = 360, H = 110, L = 18, B = 18, T = 8;
+  const counts = []; for (let i = 0; i < n; i++) { const d = startOfDay(from + i * 864e5 + 3600e3); counts.push({ d, c: syms.filter(s => startOfDay(s.time) === d).length }); }
+  const max = Math.max(3, ...counts.map(c => c.c)), bw = (W - L - 4) / n;
+  let g = '';
+  [0, Math.ceil(max / 2), max].forEach(v => { const y = H - B - v / max * (H - B - T); g += `<line class="grid" x1="${L}" x2="${W}" y1="${y}" y2="${y}"/><text class="tick" x="${L - 4}" y="${y + 3}" text-anchor="end">${v}</text>`; });
+  counts.forEach((c, i) => {
+    const x = L + i * bw + bw * 0.15, bh = c.c / max * (H - B - T);
+    if (c.c) g += `<rect x="${x}" y="${H - B - bh}" width="${bw * 0.7}" height="${bh}" rx="2" fill="var(--sym)" fill-opacity=".9"><title>${fmtDay(c.d)}：${c.c} 次症狀</title></rect>`;
+    const step = n <= 7 ? 1 : n <= 14 ? 2 : 5;
+    if (i % step === 0 || i === n - 1) g += `<text class="tick" x="${x + bw * 0.35}" y="${H - 5}" text-anchor="middle">${new Date(c.d).getMonth() + 1}/${new Date(c.d).getDate()}</text>`;
+  });
+  return `<svg class="tl" viewBox="0 0 ${W} ${H}" role="img" aria-label="每日症狀出現次數">${g}</svg>`;
+}
+function mealHasSymptom(m) {
+  const ref = (m.end && !m.endUnknown) ? ms(m.end) : ms(m.start), w = db.settings.symptomWindowHours * 3600e3;
+  return db.symptoms.some(s => { const t = ms(s.time); return t >= ref && t <= ref + w; });
+}
+/* ---- 調整干擾因子：多變量 logistic regression + 標準化（g-formula）+ bootstrap 信賴區間 ---- */
+function solve(A, b) {
+  const n = b.length, M = A.map((r, i) => [...r, b[i]]);
+  for (let c = 0; c < n; c++) {
+    let piv = c; for (let r = c + 1; r < n; r++) if (Math.abs(M[r][c]) > Math.abs(M[piv][c])) piv = r;
+    [M[c], M[piv]] = [M[piv], M[c]];
+    if (Math.abs(M[c][c]) < 1e-12) return null;
+    for (let r = 0; r < n; r++) if (r !== c) { const f = M[r][c] / M[c][c]; for (let k = c; k <= n; k++) M[r][k] -= f * M[c][k]; }
+  }
+  return M.map((r, i) => r[n] / r[i]);
+}
+const sigmoid = z => 1 / (1 + Math.exp(-z));
+function fitLogit(X, y, lambda) {
+  const p = X[0].length; let b = new Array(p).fill(0);
+  for (let it = 0; it < 30; it++) {
+    const g = new Array(p).fill(0), H = Array.from({ length: p }, () => new Array(p).fill(0));
+    X.forEach((x, i) => {
+      const mu = sigmoid(x.reduce((a, v, k) => a + v * b[k], 0)), w = mu * (1 - mu);
+      for (let a = 0; a < p; a++) { g[a] += x[a] * (y[i] - mu); for (let c = 0; c < p; c++) H[a][c] += w * x[a] * x[c]; }
+    });
+    for (let a = 1; a < p; a++) { g[a] -= lambda * b[a]; H[a][a] += lambda; }
+    const d = solve(H, g); if (!d) return null;
+    b = b.map((v, a) => v + d[a]);
+    if (Math.max(...d.map(Math.abs)) < 1e-6) break;
+  }
+  return b;
+}
+// 標準化：每一餐都假設「有這個習慣」跟「沒有」，其他因素維持原樣，算平均的症狀機率
+function stdRates(X, b, col) {
+  let p1 = 0, p0 = 0;
+  X.forEach(x => {
+    const z = x.reduce((a, v, k) => a + (k === col ? 0 : v * b[k]), 0);
+    p1 += sigmoid(z + b[col]); p0 += sigmoid(z);
+  });
+  return [p1 / X.length, p0 / X.length];
+}
+function adjustedAnalysis(rows, covs, show) {
+  const X = rows.map(r => [1, ...covs.map(c => c.f(r) ? 1 : 0)]), y = rows.map(r => mealHasSymptom(r) ? 1 : 0);
+  const b = fitLogit(X, y, 1); if (!b) return null;
+  const idx = show.map(c => covs.indexOf(c) + 1);
+  const est = idx.map(col => stdRates(X, b, col));
+  // bootstrap（固定亂數種子，每次打開數字都一樣）
+  let seed = 12345; const rnd = () => (seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648;
+  const B = 200, diffs = idx.map(() => []);
+  for (let t = 0; t < B; t++) {
+    const pick = rows.map(() => Math.floor(rnd() * rows.length));
+    const Xb = pick.map(i => X[i]), yb = pick.map(i => y[i]);
+    const bb = fitLogit(Xb, yb, 1); if (!bb) continue;
+    idx.forEach((col, k) => { const [p1, p0] = stdRates(Xb, bb, col); diffs[k].push(p1 - p0); });
+  }
+  return show.map((c, k) => {
+    const d = diffs[k].sort((u, v) => u - v), q = f => d[Math.min(d.length - 1, Math.max(0, Math.floor(f * d.length)))];
+    return { c, p1: est[k][0], p0: est[k][1], diff: est[k][0] - est[k][1], lo: q(0.025), hi: q(0.975) };
+  });
+}
+
+function corrSection() {
+  const W = db.settings.symptomWindowHours, now = Date.now(), lateH = db.settings.lateHour;
+  const isLate = m => { const h = new Date(m.start).getHours(); return h >= lateH || h < 5; };
+  // 只用「餐後觀察時間已經過完」，而且飽腹感、用餐時長、食物標籤都有記的餐，才能同時互相調整
+  const done = db.meals.filter(m => !isActive(m) && ((m.end && !m.endUnknown) ? ms(m.end) : ms(m.start)) + W * 3600e3 <= now);
+  const rows = done.filter(m => m.fullness && durMs(m) != null && m.tags && m.tags.length);
+  const covs = [
+    { name: '吃太飽', yes: '吃到很飽', no: '沒吃太飽', f: m => m.fullness >= 4 },
+    { name: '吃太晚', yes: lateH + ' 點後才吃', no: lateH + ' 點前吃', f: isLate },
+    { name: '吃太快', yes: FAST_MIN + ' 分鐘內吃完', no: '慢慢吃', f: m => durMs(m) < FAST_MIN * 60000 },
+    ...db.settings.foodTags.map(t => ({ name: '吃' + t, yes: '有吃' + t, no: '沒吃' + t, f: m => m.tags.includes(t) }))
+  ].map(c => { const a = rows.filter(c.f).length; return Object.assign(c, { nYes: a, nNo: rows.length - a, nYesSym: rows.filter(m => c.f(m) && mealHasSymptom(m)).length, nNoSym: rows.filter(m => !c.f(m) && mealHasSymptom(m)).length }); });
+  const inModel = covs.filter(c => c.nYes >= 5 && c.nNo >= 5);
+  const show = inModel.filter(c => c.nYes >= MIN_N && c.nNo >= MIN_N);
+
+  let h = `<div class="card"><div class="card-title sym">可能跟症狀有關的習慣</div>`;
+  if (!show.length) {
+    h += `<p class="headline">資料累積中</p>
+      <p class="muted small" style="margin:2px 0 10px">每個習慣的「有」跟「沒有」都要各滿 ${MIN_N} 餐才會開始分析。只算飽腹感、吃飯時間、食物標籤都有記的餐，目前有 <b class="avgv">${rows.length}</b> 餐。</p>
+      <div class="prog phead"><span></span><span>有這個習慣</span><span></span><span>沒有</span><span></span></div>
+      ${covs.map(c => `<div class="prog"><span>${esc(c.name)}</span>${progBar(c.nYes)}${progBar(c.nNo)}</div>`).join('')}
+`;
+  } else {
+    const res = adjustedAnalysis(rows, inModel, show);
+    if (!res) h += '<p class="muted small empty">這次資料算不出穩定的結果，多記幾餐再看看</p>';
+    else {
+      const likely = res.filter(r => r.lo > 0 && r.diff >= 0.1).sort((a, b) => b.diff - a.diff);
+      const unclear = res.filter(r => !(r.lo > 0 && r.diff >= 0.1));
+      h += likely.length
+        ? `<p class="headline">目前看起來，<b>${esc(likely[0].c.name)}</b>最可能跟你的症狀有關。</p>`
+        : `<p class="headline">目前還看不出哪個習慣明顯跟症狀有關。</p>`;
+      h += `<p class="muted small" style="margin:4px 0 6px">已經把其他習慣的影響扣掉後，每 10 餐裡吃完 ${W} 小時內會有症狀的餐數：</p>`;
+      likely.forEach((r, k) => {
+        const tag = r.diff >= 0.25 ? '<span class="lvl hi">很可能有關</span>' : '<span class="lvl mid">可能有關</span>';
+        h += `<div class="factor"><div class="fhead"><span class="rank">${k + 1}</span><b>${esc(r.c.name)}</b>${tag}</div>
+          ${tenRow(r.c.yes, r.p1, true)}${tenRow(r.c.no, r.p0, false)}
+          <p class="raw">實際紀錄：${esc(r.c.yes)} ${r.c.nYes} 餐中 ${r.c.nYesSym} 餐有症狀，${esc(r.c.no)} ${r.c.nNo} 餐中 ${r.c.nNoSym} 餐有症狀</p></div>`;
+      });
+      if (unclear.length) h += `<p class="unclear"><span>目前看不出關係：</span>${unclear.map(r => esc(r.c.name)).join('、')}</p>`;
+      const waiting = covs.filter(c => !show.includes(c));
+      if (waiting.length) h += `<p class="muted small" style="margin-top:6px">資料還不夠、先不分析：${waiting.map(c => esc(c.name)).join('、')}</p>`;
+      h += `<details class="how"><summary>怎麼算的？</summary>
+        <p>同一餐常常同時有好幾個習慣（例如晚上吃、又吃得很飽），直接比較會把別的習慣的影響算進來。所以這裡把所有習慣一起放進一個 logistic regression，再用標準化（g-formula）算出「如果每一餐都有這個習慣、其他條件不變」跟「都沒有」時的症狀比例，兩者的差就是扣掉其他習慣後的影響。</p>
+        <p>用 bootstrap 重抽 200 次估 95% 信賴區間，區間下限大於 0、差距 1 成以上才列為「可能有關」，2.5 成以上為「很可能有關」。只算 ${rows.length} 餐（飽腹感、吃飯時間、食物標籤都有記的）；沒記錄到的因素（像壓力、睡眠）沒辦法扣掉。</p></details>`;
+    }
+  }
+  h += `<div class="note">⚠️資料僅作為紀錄用，有持續或嚴重的症狀，請找醫師評估。</div></div>`;
+  return h;
+}
+function progBar(n) {
+  const p = Math.min(1, n / MIN_N);
+  return `<span class="pbar"><i style="width:${p * 100}%"></i></span><span class="pn">${Math.min(n, MIN_N)}/${MIN_N}</span>`;
+}
+function tenRow(label, p, strong) {
+  const n = Math.round(p * 10);
+  const dots = Array.from({ length: 10 }, (_, i) => `<i class="${i < n ? (strong ? 'on' : 'on2') : ''}"></i>`).join('');
+  return `<div class="ten"><span class="tl-lbl">${esc(label)}</span><span class="dots">${dots}</span><span class="tn">約 ${n} 餐</span></div>`;
+}
+
+/* ========== 設定 + F8 匯出匯入 ========== */
+function renderSettings() {
+  const el = $('#page-settings'), st = db.settings;
+  const perm = !('Notification' in window) ? 'unsupported' : Notification.permission;
+  const permText = { granted: '已開啟', denied: '已被封鎖（要到瀏覽器設定裡打開）', default: '還沒開啟', unsupported: '這個瀏覽器不支援網頁通知' }[perm];
+  const num = (id, label, v, min, max, unit) => `<div class="setrow"><span>${label}</span><span><input type="number" class="input" id="${id}" value="${v}" min="${min}" max="${max}"> ${unit}</span></div>`;
+  el.innerHTML = `
+  <div class="card"><div class="card-title blue">外觀</div>
+    <div class="seg" id="themeSeg">${['auto', 'light', 'dark'].map(t => `<button data-th="${t}" class="${st.theme === t ? 'on' : ''}">${THEME_NAME[t]}</button>`).join('')}</div>
+  </div>
+  <div class="card"><div class="card-title">提醒</div>
+    ${num('setRem', '開始吃飯後第一次提醒', st.reminderMinutes, 1, 180, '分')}
+    ${num('setRep', '之後每隔多久再提醒', st.repeatMinutes, 1, 60, '分')}
+    <div class="setrow"><span>通知狀態：${permText}</span><span style="display:flex;gap:6px">${perm === 'default' ? '<button class="pill" id="permBtn" style="background:var(--lane)">開啟</button>' : ''}<button class="pill" id="testBtn" style="background:var(--lane)">測試</button></span></div>
+    <div class="note">通知要網頁開著（背景分頁也可以）才會跳。手機瀏覽器大多不支援網頁通知，這時會改用分頁標題計時、震動和畫面提示，再加上下次打開時補登。</div>
+  </div>
+  <div class="card"><div class="card-title">分析</div>
+    ${num('setLate', '幾點以後開始吃算「太晚吃」', st.lateHour, 0, 23, '點')}
+    ${num('setWin', '餐後幾小時內的症狀算這一餐', st.symptomWindowHours, 1, 12, '小時')}
+  </div>
+  <div class="card"><div class="card-title">食物標籤</div>${tagEditor('food', st.foodTags)}</div>
+  <div class="card"><div class="card-title">症狀標籤</div>${tagEditor('sym', st.symptomTags)}</div>
+  <div class="card"><div class="card-title">資料<span class="hint">只存在這個瀏覽器，記得定期備份</span></div>
+    <div class="btnrow"><button class="secondary" id="expJson">備份 JSON</button><button class="secondary" id="expCsv">匯出 CSV</button></div>
+    <div class="btnrow"><button class="secondary" id="impJson">匯入 JSON</button><button class="danger" id="clearAll">清除全部</button></div>
+    <input type="file" id="impFile" accept=".json,application/json" class="hidden">
+    <div class="note">CSV 會下載兩個檔案（吃飯、症狀），用 Excel 打開就能印給醫生看。換手機或電腦時，用 JSON 備份再匯入。</div>
+  </div>
+  <p class="muted small" style="text-align:center">食刻・資料只存在你的裝置上，不會上傳到任何地方</p>`;
+
+  const bindNum = (id, key, min, max) => { el.querySelector('#' + id).onchange = e => { let v = Math.round(+e.target.value); if (!(v >= min && v <= max)) { toast('請輸入 ' + min + '～' + max); e.target.value = st[key]; return; } st[key] = v; save(); toast('已更新'); }; };
+  bindNum('setRem', 'reminderMinutes', 1, 180); bindNum('setRep', 'repeatMinutes', 1, 60);
+  bindNum('setLate', 'lateHour', 0, 23); bindNum('setWin', 'symptomWindowHours', 1, 12);
+  const pb = el.querySelector('#permBtn'); if (pb) pb.onclick = async () => { await askNotifPermission(); renderSettings(); };
+  el.querySelector('#testBtn').onclick = async () => {
+    await askNotifPermission();
+    if (notify('食刻測試通知', '看到這則就代表通知可以用了')) toast('已送出測試通知');
+    else toast('這個瀏覽器沒辦法跳通知，會改用畫面提示', 4000);
+    renderSettings();
+  };
+  bindTagEditor(el, 'food', 'foodTags'); bindTagEditor(el, 'sym', 'symptomTags');
+  el.querySelectorAll('#themeSeg button').forEach(b => b.onclick = () => { st.theme = b.dataset.th; save(); applyTheme(); renderSettings(); });
+  el.querySelector('#expJson').onclick = () => download('shike-backup-' + dayKey(Date.now()) + '.json', JSON.stringify(db, null, 2), 'application/json');
+  el.querySelector('#expCsv').onclick = exportCsv;
+  el.querySelector('#impJson').onclick = () => el.querySelector('#impFile').click();
+  el.querySelector('#impFile').onchange = e => {
+    const f = e.target.files[0]; if (!f) return;
+    const r = new FileReader();
+    r.onload = () => {
+      try {
+        const d = JSON.parse(r.result);
+        if (!Array.isArray(d.meals) || !Array.isArray(d.symptoms)) throw 0;
+        if (!confirm(`檔案裡有 ${d.meals.length} 餐、${d.symptoms.length} 次症狀。\n匯入會覆蓋目前的資料，確定嗎？`)) return;
+        d.settings = Object.assign({}, DEFAULTS, d.settings || {});
+        db = d; save(); applyTheme(); renderSettings(); toast('匯入完成');
+      } catch (err) { toast('檔案格式不對，請選食刻備份的 JSON'); }
+    };
+    r.readAsText(f); e.target.value = '';
+  };
+  el.querySelector('#clearAll').onclick = () => {
+    if (!confirm('確定要清除全部紀錄嗎？建議先備份。')) return;
+    if (!confirm('真的確定嗎？清除後無法復原。')) return;
+    db = { meals: [], symptoms: [], settings: db.settings }; save(); toast('已清除全部紀錄'); renderSettings();
+  };
+}
+function tagEditor(k, tags) {
+  return `<div class="chips">${tags.map((t, i) => `<button class="chip" data-del-${k}="${i}" aria-label="刪除 ${esc(t)}">${esc(t)}<span class="x">×</span></button>`).join('')}</div>
+    <div class="addrow"><input class="input" id="add-${k}" placeholder="新增標籤" maxlength="10"><button class="secondary" id="addBtn-${k}">新增</button></div>`;
+}
+function bindTagEditor(el, k, key) {
+  el.querySelectorAll(`[data-del-${k}]`).forEach(b => b.onclick = () => {
+    const i = +b.getAttribute('data-del-' + k), t = db.settings[key][i];
+    if (!confirm(`刪除標籤「${t}」嗎？舊紀錄不會受影響。`)) return;
+    db.settings[key].splice(i, 1); save(); renderSettings();
+  });
+  const add = () => {
+    const inp = el.querySelector('#add-' + k), v = inp.value.trim();
+    if (!v) return;
+    if (v === NONE || v === '都沒有' || v === '其他' || db.settings[key].includes(v)) { toast('這個標籤已經有了'); return; }
+    db.settings[key].push(v); save(); renderSettings();
+  };
+  el.querySelector('#addBtn-' + k).onclick = add;
+  el.querySelector('#add-' + k).onkeydown = e => { if (e.key === 'Enter') add(); };
+}
+function download(name, text, type) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], { type }));
+  a.download = name; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+}
+function exportCsv() {
+  const q = v => '"' + String(v ?? '').replace(/"/g, '""') + '"';
+  const dt = d => d ? dayKey(d) + ' ' + fmtHM(d) : '';
+  const meals = [['開始', '結束', '用餐分鐘', '飽腹感', '吃了什麼', '備註'].join(',')]
+    .concat([...db.meals].sort((a, b) => ms(a.start) - ms(b.start)).map(m => [dt(m.start), m.endUnknown ? '不明' : dt(m.end), durMs(m) != null ? Math.round(durMs(m) / 60000) : '', m.fullness || '', (m.tags || []).map(tagLabel).join('、'), m.note].map(q).join(',')));
+  const syms = [['開始', '緩解', '持續分鐘', '症狀', '強度', '備註'].join(',')]
+    .concat([...db.symptoms].sort((a, b) => ms(a.time) - ms(b.time)).map(s => [dt(s.time), dt(s.endTime), s.endTime ? (s.durOver ? '120+' : Math.round((ms(s.endTime) - ms(s.time)) / 60000)) : '', s.types.join('、'), s.intensity, s.note].map(q).join(',')));
+  const day = dayKey(Date.now());
+  download('食刻-吃飯-' + day + '.csv', '\ufeff' + meals.join('\r\n'), 'text/csv');
+  setTimeout(() => download('食刻-症狀-' + day + '.csv', '\ufeff' + syms.join('\r\n'), 'text/csv'), 600);
+  toast('已匯出兩個 CSV 檔');
+}
+
+/* ========== 分頁切換與啟動 ========== */
+let current = 'home';
+const TITLES = { home: '摘要', timeline: '時間軸', stats: '趨勢', settings: '設定' };
+function renderHeader() {
+  const d = new Date();
+  $('#eyebrow').textContent = '食刻 · ' + (d.getMonth() + 1) + '月' + d.getDate() + '日 星期' + WD[d.getDay()];
+  $('#pageTitle').textContent = TITLES[current];
+}
+function renderCurrent() {
+  renderHeader();
+  ({ home: renderHome, timeline: renderTimeline, stats: renderStats, settings: renderSettings })[current]();
+}
+document.querySelectorAll('.tab').forEach(b => b.onclick = () => {
+  current = b.dataset.page;
+  document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === b));
+  document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === 'page-' + current));
+  if (current === 'timeline') tlDay = startOfDay(Date.now());
+  renderCurrent(); window.scrollTo(0, 0);
+});
+document.addEventListener('visibilitychange', () => { if (!document.hidden) { tick(); if (!sheetOpen) renderCurrent(); } });
+
+// 啟動：打開網頁時不重複跳已錯過的通知，改由補登視窗處理
+(function init() {
+  const a = activeMeal();
+  if (a) { a.notified = Math.max(a.notified || 0, dueCount(Date.now() - ms(a.start))); save(); }
+  applyTheme(); renderHeader(); renderHome(); tick();
+  setInterval(tick, 1000);
+  checkStaleMeal();
+  maybeAskSymptomDuration();
+})();
+</script>
+</body>
+</html>
